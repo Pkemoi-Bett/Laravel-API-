@@ -9,16 +9,15 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('meal_id')->constrained('meals'); // Foreign key for meals
+            $table->foreignId('meal_order_id')->constrained('meal_orders'); // Foreign key for meal_orders
             $table->integer('quantity');
-            $table->integer('unit_price');
-            $table->foreignId('meal_availability_id')->constrained('meal_availabilities');
-            $table->foreignId('unit_of_measure_id')->constrained('unit_measures');
-            $table->integer('total_price');
-            $table->string('status');
+            $table->decimal('unit_price', 8, 2);
+            $table->decimal('total_price', 8, 2);
             $table->timestamps();
         });
     }

@@ -9,19 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('payment_modes', function (Blueprint $table) {
+        Schema::create('meal_availability', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('meal_id')->constrained('meals'); // Foreign key for meals
+            $table->date('available_date');
+            $table->integer('available_quantity');
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('payment_modes');
+        Schema::dropIfExists('meal_availability');
     }
 };

@@ -9,23 +9,28 @@ class OrderItem extends Model
 {
     use HasFactory;
 
+    // Specify the table name
+    protected $table = 'order_items';
+
+    // Specify the fillable fields
     protected $fillable = [
-        'quantity',
-        'unit_price',
-        'meal_availability_id',
-        'unit_of_measure_id',
-        'total_price',
-        'status',
+        'quantity',       // Quantity of the item
+        'unit_price',     // Price per unit
+        'total_price',    // Calculated total price
+        'meal_id',        // Foreign key referencing meals table
+        'meal_order_id'   // Foreign key referencing meal_order table
     ];
 
-    public function mealAvailability()
+    // Relationships
+    public function meal()
     {
-        return $this->belongsTo(MealAvailability::class);
+        return $this->belongsTo(Meal::class, 'meal_id');
     }
 
-    public function unitOfMeasure()
+    public function mealOrder()
     {
-        return $this->belongsTo(UnitMeasure::class);
+        return $this->belongsTo(MealOrder::class, 'meal_order_id');
     }
 }
+
 

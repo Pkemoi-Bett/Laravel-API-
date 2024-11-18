@@ -4,26 +4,23 @@ namespace Database\Factories;
 
 use App\Models\Meal;
 use App\Models\MealCategory;
-use App\Models\UnitMeasure;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MealFactory extends Factory
 {
     protected $model = Meal::class;
 
-    /**
-     * Define the model's default state.
-     */
-    public function definition(): array
+    public function definition()
     {
         return [
-            'name' => $this->faker->word,
-            'meal_category_id' => MealCategory::factory(),
-            'price_per_unit' => $this->faker->numberBetween(100, 1000),
-            'picture' => null,
+            'name' => $this->faker->word(),
+            'meal_category_id' => MealCategory::inRandomOrder()->first()->id,
+            'price_per_unit' => $this->faker->randomFloat(2, 5, 100),
+            'picture' => $this->faker->imageUrl(),
             'picture_url' => $this->faker->imageUrl(),
-            'unit_of_measure_id' => UnitMeasure::factory(),
-            'description' => $this->faker->sentence,
+            'description' => $this->faker->sentence(),
+            'created_by' => User::inRandomOrder()->first()->id,
         ];
     }
 }

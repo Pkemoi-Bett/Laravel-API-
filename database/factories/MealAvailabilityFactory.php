@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Meal;
 use App\Models\MealAvailability;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -12,10 +13,9 @@ class MealAvailabilityFactory extends Factory
     public function definition()
     {
         return [
-            'meal_id' => \App\Models\Meal::factory(), // Assumes you have a Meal factory
+            'meal_id' => Meal::inRandomOrder()->first()->id,
             'available_date' => $this->faker->date(),
-            'available_quantity' => $this->faker->numberBetween(1, 100),
-            'unit_price' => $this->faker->numberBetween(10, 100), // Generates a random price
+            'available_quantity' => $this->faker->numberBetween(10, 100)
         ];
     }
 }

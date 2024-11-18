@@ -9,66 +9,73 @@ use Illuminate\Http\Request;
 
 class OrderItemController extends Controller
 {
-    /**
-     * Display a listing of the order items.
-     */
-    public function index()
-    {
-        return OrderItem::with(['mealAvailability', 'unitOfMeasure'])->get();
-    }
-
-    /**
-     * Store a newly created order item in storage.
-     */
+    // Create a new order item
     public function store(Request $request)
     {
-        $request->validate([
-            'quantity' => 'required|integer',
-            'unit_price' => 'required|integer',
-            'meal_availability_id' => 'required|exists:meal_availabilities,id',
-            'unit_of_measure_id' => 'required|exists:unit_measures,id',
-            'total_price' => 'required|integer',
-            'status' => 'required|string',
+        $validatedData = $request->validate([
+            'quantity' => 'required|integer|min:1',
+            'unit_price' => 'required|numeric|min:0',
+            'meal_id' => 'required|exists:meals,id',
+            'meal_order_id' => 'required|exists:meal_orders,id',
         ]);
 
-        $orderItem = OrderItem::create($request->all());
+        // Calculate total price
+        $validatedData['total_price'] = $validatedData['quantity'] * $validatedData['unit_price'];
 
-        return response()->json($orderItem, 201);
+        $orderItem = OrderItem::create($validatedData);
+
+        return response()->json([
+            'message' => 'Order item added successfully!',
+            'data' => $orderItem
+        ], 201);
     }
 
-    /**
-     * Display the specified order item.
-     */
-    public function show(OrderItem $orderItem)
+    // Get all order items
+    public function index()
     {
-        return $orderItem->load(['mealAvailability', 'unitOfMeasure']);
+        $orderItems = OrderItem::with(['meal', 'mealOrder'])->get();
+
+        return response()->json([
+            'message' => 'Order items retrieved successfully!',
+            'data' => $orderItems
+        ]);
     }
 
-    /**
-     * Update the specified order item in storage.
-     */
-    public function update(Request $request, OrderItem $orderItem)
+    // Update an order item
+    public function update(Request $request, $id)
     {
-        $request->validate([
-            'quantity' => 'required|integer',
-            'unit_price' => 'required|integer',
-            'meal_availability_id' => 'required|exists:meal_availabilities,id',
-            'unit_of_measure_id' => 'required|exists:unit_measures,id',
-            'total_price' => 'required|integer',
-            'status' => 'required|string',
+        $orderItem = OrderItem::findOrFail($id);
+
+        $validatedData = $request->validate([
+            'quantity' => 'sometimes|required|integer|min:1',
+            'unit_price' => 'sometimes|required|numeric|min:0',
+            'meal_id' => 'sometimes|required|exists:meals,id',
+            'meal_order_id' => 'sometimes|required|exists:meal_orders,id',
         ]);
 
-        $orderItem->update($request->all());
+        // If quantity or unit price is updated, recalculate the total price
+        if (isset($validatedData['quantity']) || isset($validatedData['unit_price'])) {
+            $quantity = $validatedData['quantity'] ?? $orderItem->quantity;
+            $unit_price = $validatedData['unit_price'] ?? $orderItem->unit_price;
+            $validatedData['total_price'] = $quantity * $unit_price;
+        }
 
-        return response()->json($orderItem, 200);
+        $orderItem->update($validatedData);
+
+        return response()->json([
+            'message' => 'Order item updated successfully!',
+            'data' => $orderItem
+        ]);
     }
 
-    /**
-     * Remove the specified order item from storage.
-     */
-    public function destroy(OrderItem $orderItem)
+    // Delete an order item
+    public function destroy($id)
     {
+        $orderItem = OrderItem::findOrFail($id);
         $orderItem->delete();
-        return response()->json(null, 204);
+
+        return response()->json([
+            'message' => 'Order item deleted successfully!'
+        ]);
     }
 }

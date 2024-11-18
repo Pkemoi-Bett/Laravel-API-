@@ -6,73 +6,83 @@ use App\Http\Requests\StoreMealRequest;
 use App\Http\Requests\UpdateMealRequest;
 use App\Models\Meal;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class MealController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the meals.
      */
     public function index()
     {
-        return response()->json(Meal::with(['category', 'unitOfMeasure'])->get());
+        $meals = Meal::with(['category', 'creator'])->get();
+        return response()->json($meals);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created meal in the database.
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'meal_category_id' => 'required|exists:meal_categories,id',
-            'price_per_unit' => 'required|integer',
-            'unit_of_measure_id' => 'required|exists:unit_measures,id',
-            'description' => 'nullable|string',
-            'picture' => 'nullable|string',
-            'picture_url' => 'nullable|url',
+            'price_per_unit' => 'required|numeric',
+            'picture' => 'required|string',
+            'picture_url' => 'required|url',
+            'description' => 'required|string',
+            'created_by' => 'required|exists:users,id'
         ]);
 
-        $meal = Meal::create($request->all());
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
 
+        $meal = Meal::create($request->all());
         return response()->json($meal, 201);
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified meal.
      */
-    public function show(Meal $meal)
+    public function show($id)
     {
-        return response()->json($meal->load(['category', 'unitOfMeasure']));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Meal $meal)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'meal_category_id' => 'required|exists:meal_categories,id',
-            'price_per_unit' => 'required|integer',
-            'unit_of_measure_id' => 'required|exists:unit_measures,id',
-            'description' => 'nullable|string',
-            'picture' => 'nullable|string',
-            'picture_url' => 'nullable|url',
-        ]);
-
-        $meal->update($request->all());
-
+        $meal = Meal::with(['category', 'creator'])->findOrFail($id);
         return response()->json($meal);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Update the specified meal in the database.
      */
-    public function destroy(Meal $meal)
+    public function update(Request $request, $id)
     {
-        $meal->delete();
+        $meal = Meal::findOrFail($id);
 
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:255',
+            'meal_category_id' => 'sometimes|exists:meal_categories,id',
+            'price_per_unit' => 'sometimes|numeric',
+            'picture' => 'sometimes|string',
+            'picture_url' => 'sometimes|url',
+            'description' => 'sometimes|string',
+            'created_by' => 'sometimes|exists:users,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $meal->update($request->all());
+        return response()->json($meal);
+    }
+
+    /**
+     * Remove the specified meal from the database.
+     */
+    public function destroy($id)
+    {
+        $meal = Meal::findOrFail($id);
+        $meal->delete();
         return response()->json(null, 204);
     }
 }
-

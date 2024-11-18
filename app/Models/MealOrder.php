@@ -5,23 +5,33 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MealOrder extends Model
+
+
+class mealOrder extends Model
 {
     use HasFactory;
 
+    // Specify the table name
+    protected $table = 'order_items';
+
+    // Specify the fillable fields
     protected $fillable = [
-        'customer_id',
-        'order_status',
-        'date_ordered',
-        'status',
-        'total_price',
-        'order_number',
+        'phone_number', //Phone number of the customer 
+        'quantity',       // Quantity of the item
+        'unit_price',     // Price per unit
+        'total_price',    // Calculated total price
+        'meal_id',        // Foreign key referencing meals table
+        'meal_order_id'   // Foreign key referencing meal_order table
     ];
 
-    public function customer()
+    // Relationships
+    public function meal()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Meal::class, 'meal_id');
     }
 
-    // Add any additional relationships, scopes, or methods here
+    public function mealOrder()
+    {
+        return $this->belongsTo(MealOrder::class, 'meal_order_id');
+    }
 }

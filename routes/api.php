@@ -10,6 +10,8 @@ use App\Http\Controllers\MealOrderController;
 use App\Http\Controllers\PaymentModeController;
 use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\DurationCategoryController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserRoleController;
 
 
 
@@ -23,6 +25,21 @@ Route::apiResource('meals', MealController::class);
 Route::apiResource('meal-categories', MealCategoryController::class);
 Route::apiResource('payment-modes', PaymentModeController::class);
 Route::apiResource('duration-categories', DurationCategoryController::class);
+Route::prefix('roles')->group(function () {
+    Route::get('/', [UserRoleController::class, 'index']);
+    Route::post('/', [UserRoleController::class, 'store']);
+    Route::get('{userRole}', [UserRoleController::class, 'show']);
+    Route::put('{userRole}', [UserRoleController::class, 'update']);
+    Route::delete('{userRole}', [UserRoleController::class, 'destroy']);
+});
+
+Route::prefix('users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::post('/', [UserController::class, 'store']);
+    Route::get('{user}', [UserController::class, 'show']);
+    Route::put('{user}', [UserController::class, 'update']);
+    Route::delete('{user}', [UserController::class, 'destroy']);
+});;
 
 
 Route::get('/user', function (Request $request) {

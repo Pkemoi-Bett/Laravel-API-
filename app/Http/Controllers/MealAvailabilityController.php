@@ -6,67 +6,75 @@ use App\Http\Requests\StoreMealAvailabilityRequest;
 use App\Http\Requests\UpdateMealAvailabilityRequest;
 use App\Models\MealAvailability;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class MealAvailabilityController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the meal availabilities.
      */
     public function index()
     {
-        return response()->json(MealAvailability::with('meal')->get());
+        $availabilities = MealAvailability::with('meal')->get();
+        return response()->json($availabilities);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created meal availability.
      */
     public function store(Request $request)
     {
-        // Validate incoming data
-        $validatedData = $request->validate([
-            'meal_id' => 'required|exists:meals,id',
+        $validator = Validator::make($request->all(), [
+            'meal_id' => 'required|exists:meals,id',  // Validates that meal_id exists in meals table
             'available_date' => 'required|date',
-            'available_quantity' => 'required|integer',
-            'unit_price' => 'required|integer', // Ensure unit_price is validated
+            'available_quantity' => 'required|integer'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+    
+        $availability = MealAvailability::create($request->all());
+        return response()->json($availability, 201);
+    }
+    
+    /**
+     * Display the specified meal availability.
+     */
+    public function show($id)
+    {
+        $availability = MealAvailability::with('meal')->findOrFail($id);
+        return response()->json($availability);
+    }
+
+    /**
+     * Update the specified meal availability.
+     */
+    public function update(Request $request, $id)
+    {
+        $availability = MealAvailability::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'meal_id' => 'sometimes|exists:meals,id',
+            'available_date' => 'sometimes|date',
+            'available_quantity' => 'sometimes|integer'
         ]);
 
-        // Create a new meal availability entry
-        $mealAvailability = MealAvailability::create($validatedData);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
 
-        return response()->json($mealAvailability, 201);
-    }
-    /**
-     * Display the specified resource.
-     */
-    public function show(MealAvailability $mealAvailability)
-    {
-        return response()->json($mealAvailability->load('meal'));
+        $availability->update($request->all());
+        return response()->json($availability);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Remove the specified meal availability.
      */
-    public function update(Request $request, MealAvailability $mealAvailability)
+    public function destroy($id)
     {
-        $request->validate([
-            'meal_id' => 'required|exists:meals,id',
-            'available_date' => 'required|date',
-            'available_quantity' => 'required|integer|min:1'
-        ]);
-
-        $mealAvailability->update($request->all());
-
-        return response()->json($mealAvailability);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(MealAvailability $mealAvailability)
-    {
-        $mealAvailability->delete();
-
+        $availability = MealAvailability::findOrFail($id);
+        $availability->delete();
         return response()->json(null, 204);
     }
 }
-

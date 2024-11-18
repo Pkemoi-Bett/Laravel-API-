@@ -9,9 +9,9 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('duration_categories', function (Blueprint $table) {
+        Schema::create('meal_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->time('start_time');
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('duration_categories');
+        Schema::dropIfExists('meal_categories');
     }
 };
